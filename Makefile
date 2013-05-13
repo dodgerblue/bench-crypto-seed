@@ -5,7 +5,7 @@ LDFLAGS = -lbotan-1.10 -lgcrypt -lcryptopp
 
 all: encrypt decrypt
 
-encrypt: encrypt.o botan.o gcrypt.o cryptopp.o
+encrypt: encrypt.o botan.o gcrypt.o cryptopp.o util.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 decrypt: decrypt.o
