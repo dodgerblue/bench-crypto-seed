@@ -3,12 +3,12 @@
 TEMPDIR=temp
 
 URLS=(
-    # "http://files.randombit.net/botan/v1.10/Botan-1.10.0.tbz"
-    # "ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.5.2.tar.bz2"
-    http://cryptopp.com/cryptopp562.zip
+    "http://files.randombit.net/botan/v1.10/Botan-1.10.0.tbz"
+    "ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.5.2.tar.bz2"
+    "http://cryptopp.com/cryptopp562.zip"
 )
 
-for url in $URLS; do
+for url in "${URLS[@]}"; do
     wget $url
     archive=$(echo $url | awk -F'/' '{printf("%s", $NF)}')
 
@@ -44,7 +44,7 @@ for url in $URLS; do
         cd ..
     fi
 
-    # sudo rm -R $TEMPDIR
-    # sudo rm $archive
+    sudo rm -R $TEMPDIR
+    sudo rm $archive
 
 done

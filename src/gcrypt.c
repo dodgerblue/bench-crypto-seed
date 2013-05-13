@@ -6,12 +6,6 @@ void gcrypt_init(void **obj) {
 
 	*obj = malloc(sizeof(gcry_cipher_hd_t));
 
-	// initialize
-	if (!gcry_check_version (GCRYPT_VERSION)) {
-		fputs ("libgcrypt version mismatch\n", stderr);
-		exit (2);
-	}
-
 	/* Disable secure memory.  */
 	gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
 

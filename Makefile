@@ -3,7 +3,10 @@ CC = g++
 LFLAGS = -I/usr/include/botan-1.10/
 LDFLAGS = -lbotan-1.10 -lgcrypt -lcryptopp
 
-all: encrypt decrypt
+all: encrypt decrypt test
+
+test: test.o botan.o gcrypt.o cryptopp.o util.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 encrypt: encrypt.o botan.o gcrypt.o cryptopp.o util.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
@@ -17,4 +20,4 @@ decrypt: decrypt.o
 .PHONY: clean
 
 clean:
-	rm -f encrypt decrypt *.o
+	rm -f encrypt decrypt test *.o

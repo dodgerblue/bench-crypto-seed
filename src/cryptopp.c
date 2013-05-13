@@ -1,5 +1,5 @@
-#include <crypto++/modes.h>
-#include <crypto++/seed.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/seed.h>
 #include "util.h"
 
 struct cryptopp_t {
