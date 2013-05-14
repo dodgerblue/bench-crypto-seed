@@ -14,8 +14,8 @@ void print_usage(char *name) {
 	int i;
 
 	printf("Usage: %s <way> <lib_id> <block_chunks> <infile> <outfile> \n\
-	block_chunks - size of intermediate buffer (block_chunks * %d) \
-	way - 0 encrypt, 1 decrypt \
+	block_chunks - size of intermediate buffer (block_chunks * %d)\n \
+	way - 0 encrypt, 1 decrypt\n \
 	where lib_id may be one of the following:\n\n", name, MY_BLOCKSIZE);
 
 	for (i = 0; i < 3; i ++) {
@@ -23,12 +23,35 @@ void print_usage(char *name) {
 	}
 }
 
+int process_chunk(void *handle, int lib_id, unsigned int way, int fin, char *bufin, int fout, char *bufout, size_t blocks) {
+	ssize_t brw;
+
+	brw = read(fin, bufin, blocks * MY_BLOCKSIZE);
+	if (brw == -1) {
+		fprintf(stderr, "Unable to read chunk from file\n");
+		return 1;
+	}
+
+	if (way == 0)
+		apis[lib_id].encrypt(handle, bufin, bufout, blocks);
+	else
+		apis[lib_id].decrypt(handle, bufin, bufout, blocks);
+
+	brw = write(fout, bufout, blocks * MY_BLOCKSIZE);
+	if (brw == -1) {
+		fprintf(stderr, "Unable to write chunk to file\n");
+		return 1;
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	int fin, fout;
-	char *buffer;
+	char *bufin, *bufout;
 	unsigned int lib_id, block_chunks, way;
 	void *handle;
-	off_t file_size, blocks;
+	off_t file_size, blocks, i;
 
 	if (argc != 6) {
 		print_usage(argv[0]);
@@ -69,15 +92,42 @@ int main(int argc, char *argv[]) {
 
 	blocks = file_size / MY_BLOCKSIZE;
 
-	buffer = malloc(block_chunks * MY_BLOCKSIZE);
-	if (buffer == NULL) {
-		fprintf(stderr, "Unable to alloc buffer memory\n");
-		goto out_no_memory;
+	bufin = (char *) malloc(block_chunks * MY_BLOCKSIZE);
+	if (bufin == NULL) {
+		fprintf(stderr, "Unable to alloc in buffer memory\n");
+		goto out_no_memory_bufin;
 	}
+
+	bufout = (char *) malloc(block_chunks * MY_BLOCKSIZE);
+	if (bufout == NULL) {
+		fprintf(stderr, "Unable to alloc out buffer memory\n");
+		goto out_no_memory_bufout;
+	}
+
+	apis[lib_id].init(&handle);
+
+	for (i = 0; i + (off_t) block_chunks < blocks; i += block_chunks)
+		if (process_chunk(handle, lib_id, way, fin, bufin, fout, bufout, block_chunks))
+			goto out_fail_process;
+
+	i = blocks - i;
+	if (i)
+		if (process_chunk(handle, lib_id, way, fin, bufin, fout, bufout, i))
+			goto out_fail_process;
+
+	free(bufout);
+	free(bufin);
+
+	close(fout);
+	close(fin);
 
 	return 0;
 
-out_no_memory:
+out_fail_process:
+	free(bufout);
+out_no_memory_bufout:
+	free(bufin);
+out_no_memory_bufin:
 out_invalid_file_size:
 out_lseek:
 	close(fout);
