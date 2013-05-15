@@ -39,6 +39,10 @@ for url in "${URLS[@]}"; do
 
     sudo make install
 
+    if [ -f "/usr/lib/libcryptopp.so" ] && [ -d "/usr/lib64" ]; then
+        sudo cp /usr/lib/libcryptopp.so /usr/lib64
+    fi
+
     cd ..
     if [ 1 -eq `ls | wc -l` ]; then
         cd ..

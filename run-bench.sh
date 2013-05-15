@@ -22,6 +22,36 @@ init() {
 	make
 }
 
+initial_test() {
+    echo "Checking if run environment is safe: "
+
+    touch $FILE
+
+    RET=0
+
+    $BINARY 0 0 2 $FILE $ENCFILE
+    if [ 0 -ne $? ]; then
+        echo "FAIL: Unable to run $BINARY in this environment"
+        RET=1
+    fi
+
+    for binary in "time" "strace" "valgrind" "perf"; do
+        which $binary &> /dev/null
+        if [ 0 -ne $? ]; then
+            echo "Please install $binary on your machine"
+            RET=1
+        fi
+    done
+
+    if [ 1 -eq $RET ]; then
+        exit 1
+    fi
+
+    echo "Cool. On with the tests."
+
+    rm -f $FILE $ENCFILE
+}
+
 clean() {
 	make clean
 	rm -f $FILE $ENCFILE $DECFILE
@@ -31,6 +61,8 @@ clean() {
 # this section here is the code
 
 init
+
+initial_test
 
 for test_cmd in 0 1 3; do
 	echo "Testing " ${TEST_CMDS[$test_cmd]}
